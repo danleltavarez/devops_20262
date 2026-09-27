@@ -1,22 +1,24 @@
 const { Pool } = require('pg');
 
-// A pool lê as variáveis padrão do driver `pg` (PGHOST, PGPORT, PGUSER,
-// PGPASSWORD, PGDATABASE) OU a DATABASE_URL, se estiver definida.
-// Isso permite usar tanto o Compose local quanto o RDS na AWS sem mudar código.
+const useSsl = process.env.PGSSL === 'true';
+
 const pool = new Pool(
   process.env.DATABASE_URL
-    ? { connectionString: process.env.DATABASE_URL, ssl: false }
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: useSsl ? { rejectUnauthorized: false } : false,
+      }
     : {
         host: process.env.PGHOST || 'db',
         port: Number(process.env.PGPORT) || 5432,
         user: process.env.PGUSER || 'postgres',
         password: process.env.PGPASSWORD || 'postgres',
         database: process.env.PGDATABASE || 'reservas',
+        ssl: useSsl ? { rejectUnauthorized: false } : undefined,
       }
 );
 
 // Cria a tabela na subida da aplicação, se ainda não existir.
-// Simples e suficiente para o escopo da prova (sem ferramenta de migração).
 async function initSchema() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS reservas (
