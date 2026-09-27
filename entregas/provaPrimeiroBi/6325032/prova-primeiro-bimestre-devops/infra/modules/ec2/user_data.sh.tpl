@@ -27,5 +27,6 @@ docker run -d \
   -e PGPORT="${db_port}" \
   -e PGUSER="${db_user}" \
   -e PGPASSWORD="${db_password}" \
+  -e PGSSL=true \
   -e PGDATABASE="${db_name}" \
   api-reservas:latest
